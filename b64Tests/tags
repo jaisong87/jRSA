@@ -6,10 +6,13 @@
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 B64Codec	Base64Codec.cpp	/^B64Codec::B64Codec(){$/;"	f	class:B64Codec
 B64Codec	Base64Codec.h	/^class B64Codec { $/;"	c
+RSAEngine	RSAEngine.cpp	/^RSAEngine::RSAEngine()$/;"	f	class:RSAEngine
+RSAEngine	RSAEngine.h	/^class RSAEngine {$/;"	c
 RSAPrivateKey	RSAPrivateKey.cpp	/^RSAPrivateKey::RSAPrivateKey(vector<char> byteStream)$/;"	f	class:RSAPrivateKey
 RSAPrivateKey	RSAPrivateKey.h	/^class RSAPrivateKey {$/;"	c
 __BERUTILS_H__	berUtils.h	2;"	d
 __Base64Codec_H_	Base64Codec.h	2;"	d
+__RSAENGINE_H__	RSAEngine.h	2;"	d
 __RSAPRIVATEKEY_H__	RSAPrivateKey.h	2;"	d
 berMpzClass	berUtils.h	/^	berMpzClass() {$/;"	f	class:berMpzClass
 berMpzClass	berUtils.h	/^	berMpzClass(string num, int base, int l)$/;"	f	class:berMpzClass
@@ -17,20 +20,29 @@ berMpzClass	berUtils.h	/^class berMpzClass {$/;"	c
 berString	berUtils.h	/^berString() {$/;"	f	class:berString
 berString	berUtils.h	/^berString(string dat, int l)$/;"	f	class:berString
 berString	berUtils.h	/^class berString{$/;"	c
+bigmodBPM	RSAEngine.cpp	/^mpz_class RSAEngine::bigmodBPM(mpz_class b, mpz_class p, mpz_class m) {$/;"	f	class:RSAEngine
 d	RSAPrivateKey.h	/^berMpzClass d;$/;"	m	class:RSAPrivateKey
 data	berUtils.h	/^mpz_class data;$/;"	m	class:berMpzClass
 data	berUtils.h	/^string data;$/;"	m	class:berString
 decodeB64Stream	Base64Codec.cpp	/^vector<char> B64Codec::decodeB64Stream(string inp)$/;"	f	class:B64Codec
+decodeMessage	RSAEngine.cpp	/^vector<char> RSAEngine::decodeMessage(vector<char> message, int emLen){$/;"	f	class:RSAEngine
+decryptMessage	RSAEngine.cpp	/^vector<char> RSAEngine::decryptMessage(mpz_class publicKey, mpz_class modulus, vector<char> message){$/;"	f	class:RSAEngine
 e	RSAPrivateKey.h	/^berMpzClass e;$/;"	m	class:RSAPrivateKey
 e1	RSAPrivateKey.h	/^berMpzClass e1; \/* d mod ( p-1 ) *\/$/;"	m	class:RSAPrivateKey
 e2	RSAPrivateKey.h	/^berMpzClass e2; \/* d mod ( q-1 ) *\/$/;"	m	class:RSAPrivateKey
+encodeMessage	RSAEngine.cpp	/^vector<char> RSAEngine::encodeMessage(vector<char> message, int emLen) {$/;"	f	class:RSAEngine
+encryptMessage	RSAEngine.cpp	/^vector<char> RSAEngine::encryptMessage(mpz_class privateKey, mpz_class modulus, vector<char> message) {$/;"	f	class:RSAEngine
 extractBigInteger	RSAPrivateKey.cpp	/^berMpzClass RSAPrivateKey::extractBigInteger(vector<char> byteStream, int& pos, int lenOfType) {$/;"	f	class:RSAPrivateKey
 getBitStr	RSAPrivateKey.cpp	/^string getBitStr(char N)$/;"	f
 getBitStr	test.cpp	/^string getBitStr(char N)$/;"	f
 getBitString	Base64Codec.cpp	/^string B64Codec::getBitString(char N)$/;"	f	class:B64Codec
+getByteStream	RSAEngine.cpp	/^vector<char> RSAEngine::getByteStream(mpz_class num, int len)$/;"	f	class:RSAEngine
+getByteStream	test6.cpp	/^vector<char> getByteStream(mpz_class num, int len)$/;"	f
 getData	berUtils.h	/^mpz_class getData() {$/;"	f	class:berMpzClass
 getData	berUtils.h	/^string getData() {$/;"	f	class:berString
 getFieldLength	RSAPrivateKey.cpp	/^unsigned int RSAPrivateKey::getFieldLength(vector<char> byteStream, int &pos){$/;"	f	class:RSAPrivateKey
+getHexVal	RSAEngine.cpp	/^int RSAEngine:: getHexVal(char ch){$/;"	f	class:RSAEngine
+getHexVal	test6.cpp	/^int getHexVal(char ch){$/;"	f
 getLen	berUtils.h	/^int getLen() {$/;"	f	class:berMpzClass
 getLen	berUtils.h	/^int getLen() {$/;"	f	class:berString
 getTag	RSAPrivateKey.cpp	/^int RSAPrivateKey::getTag(vector<char> byteStream, int &pos){$/;"	f	class:RSAPrivateKey
@@ -38,10 +50,14 @@ len	berUtils.h	/^int len;$/;"	m	class:berMpzClass
 len	berUtils.h	/^int len;$/;"	m	class:berString
 main	test.cpp	/^int main()$/;"	f
 main	test2.cpp	/^int main()$/;"	f
+main	test4.cpp	/^int main() {$/;"	f
+main	test5.cpp	/^int main()$/;"	f
+main	test6.cpp	/^int main()$/;"	f
 modulus	RSAPrivateKey.h	/^berMpzClass modulus;$/;"	m	class:RSAPrivateKey
 n	RSAPrivateKey.h	/^berMpzClass n;$/;"	m	class:RSAPrivateKey
 otherPrimeInfos	RSAPrivateKey.h	/^berString otherPrimeInfos;$/;"	m	class:RSAPrivateKey
 p	RSAPrivateKey.h	/^berMpzClass p;$/;"	m	class:RSAPrivateKey
+printBytestream	test5.cpp	/^void printBytestream(vector<char> v)$/;"	f
 q	RSAPrivateKey.h	/^berMpzClass q;$/;"	m	class:RSAPrivateKey
 stringToByteStream	Base64Codec.cpp	/^vector<char> B64Codec::stringToByteStream(string str)$/;"	f	class:B64Codec
 version	RSAPrivateKey.h	/^int version;$/;"	m	class:RSAPrivateKey
