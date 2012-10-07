@@ -21,12 +21,16 @@ char PSMsg = 0x4A;
 char byte1 = 0x02;
 char lastByte = 0x00;
 
+mpz_class randVector = mpz_class("f59c5c218619fc22375fb60144cfaf09839ad4b40c32257c891f6c6cb5102ad55c97454b114b6a14920e16bffb7918480a8255fa3fdecd0f5ec98506a30c5627c3644412fd8be37e50fc393cb7144236898d2146ae35876cfefb2506e8f649310d3b5e523e12396640886d77f468595640db5a7ff1e1f9", 16);
+
+vector<char> randomPadding = getByteStream(randVector, 119);
+
 vector<char> encodedMessage;
 
 	cout<<"RSAEngine::Padding with "<<(emLen -2 - mLen)<<" bytes"<<endl;
 encodedMessage.push_back(byte1);
 for(int i=0;i<(emLen -2 - mLen);i++)
-	encodedMessage.push_back(PSMsg);
+	encodedMessage.push_back(randomPadding[i]);
 
 encodedMessage.push_back(lastByte);
 
@@ -106,7 +110,7 @@ vector<char> RSAEngine::decryptMessage(mpz_class publicKey, mpz_class modulus, v
 
         vector<char> msg = decodeMessage(decryptedMsg, 128);
 	cout<<"Encryption returned stream with "<<msg.size()<<" bytes"<<endl;
-	cout<<" *********** start of decryption ************* "<<endl;
+	cout<<" *********** end of decryption ************* "<<endl;
 	return msg;
 }
 
@@ -185,7 +189,8 @@ while(f1.good())
 	{
 		char ch;
 		f1.get(ch);
-		inStream.push_back(ch);
+		if(f1.good())
+			inStream.push_back(ch);
 	}
 f1.close();
 
@@ -209,7 +214,8 @@ while(f1.good())
         {
                 char ch;
                 f1.get(ch);
-                inStream.push_back(ch);
+		if(f1.good())
+                	inStream.push_back(ch);
         }
 f1.close();
 

@@ -2,9 +2,11 @@
 #define __BERUTILS_H__
 #include "gmpxx.h"
 #include<iostream>
+#include<sstream>
 #include<string>
 using namespace std;
 
+/*
 class berString{
 string data;
 int len;
@@ -30,32 +32,21 @@ int getLen() {
         }
 
 };
+*/
 
 class berMpzClass {
 mpz_class data;
 int len;
 
 public:
-	berMpzClass() {
-		data = 0;
-		len = 0;
-	}
+berMpzClass();
+berMpzClass(mpz_class);
+berMpzClass(string num, int base);
+berMpzClass(string num, int base, int l);
 
-	berMpzClass(string num, int base, int l)
-		{
-			len = l;
-			cout<<"Constructing mpz_class from "<<num<<" base-"<<base<<endl;
-			data = mpz_class(num,base);
-		}
-
-mpz_class getData() {
-		return data;
-	}
-
-int getLen() {
-		return len;
-	}
+mpz_class getData();
+int getLen();
+string getRsaHexStr();
 };
-
 
 #endif
