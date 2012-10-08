@@ -15,7 +15,8 @@ string getBitString(char ch);
 public:
 B64Codec();
 vector<char> decodeB64Stream(string);
-
+string encodeB64Stream(vector<char>);
+string getEncodingFromBitString(string str, int plen);
 };
 
 

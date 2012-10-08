@@ -4,6 +4,7 @@
 #include<iostream>
 #include<sstream>
 #include<string>
+#include<vector>
 using namespace std;
 
 /*
@@ -47,6 +48,8 @@ berMpzClass(string num, int base, int l);
 mpz_class getData();
 int getLen();
 string getRsaHexStr();
+vector<char> getByteStream();
+int getHexVal(char);
 };
 
 #endif

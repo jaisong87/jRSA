@@ -1,9 +1,9 @@
 #include "RSAPrivateKey.h"
 #include<iostream>
 using namespace std;
-
+#define UNIVERSAL_PRIMITIVE_INTEGER 0x02
 /* Temporary function. remove it once done */
-string getBitStr(char N)
+string RSAPrivateKey::getBitStr(char N)
 {
 string bstr = "";
 int mask = (1<<7);
@@ -14,6 +14,20 @@ int mask = (1<<7);
                         else bstr+="0";
                 }
 return bstr;
+}
+
+char RSAPrivateKey::getByte(unsigned int N)
+{
+        char ch = 0x00; 
+                        int mask = 0x80;
+                        for(int i=0;i<8;i++)
+                                {
+                                        ch<<=1;
+                                        if((N&mask)!=0)
+                                                ch|=0x01;
+                                        mask>>=1;
+                                }
+return ch;
 }
 
 /* Constructor with all args */
@@ -279,4 +293,163 @@ cout<<"exponent2:"<<endl;
 cout<<hex<<e2.getRsaHexStr()<<endl;
 cout<<"coefficient:"<<endl;
 cout<<hex<<coeff.getRsaHexStr()<<endl;
+}
+
+vector<char> RSAPrivateKey::getPrimitiveByteStream(berMpzClass dat) {
+vector<char> byteStream;
+char ch;
+ch = UNIVERSAL_PRIMITIVE_INTEGER;
+byteStream.push_back(ch);
+
+int len = dat.getLen();
+if(len<=127) {
+		ch = getByte(len);
+		byteStream.push_back(ch);
+	}
+else if(len<=65535)
+	 {	/* Long Form - look at 2 more bytes*/
+		ch = 0x82;
+		byteStream.push_back(ch);
+		ch = getByte(len>>8);
+		byteStream.push_back(ch);
+		ch = getByte(len);	
+		byteStream.push_back(ch);
+	 }
+else {
+		/* Long form - look at 3 more bytes(anything more is insane)*/
+		ch = 0x83;
+		byteStream.push_back(ch);
+		ch = getByte(len>>16);
+                byteStream.push_back(ch);
+		ch = getByte(len>>8);
+                byteStream.push_back(ch);
+		ch = getByte(len);
+                byteStream.push_back(ch);
+	}
+/* get content byte stream and append here */
+vector<char> bigNumStream = dat.getByteStream();
+for(int i=0;i<bigNumStream.size();i++)
+	byteStream.push_back(bigNumStream[i]);
+
+//cout<<"Returning stream of length "<<byteStream.size()<<endl;
+return byteStream;
+}
+
+int RSAPrivateKey::writeKeyFile(string outFile) {
+	vector<char> bstream = getByteStream();
+	B64Codec cdc = B64Codec();
+	string outStr = cdc.encodeB64Stream(bstream);
+	string output = "-----BEGIN RSA PRIVATE KEY-----";
+	
+	for(int i=0;i<outStr.size();i++)
+		{
+			if(i%64 == 0)
+				output+="\n";
+			output += outStr[i];
+		}
+	output+="\n-----END RSA PRIVATE KEY-----\n";
+	
+	ofstream f1(outFile.c_str());
+	f1<<output;
+	f1.close();
+	return 0;	
+}
+
+vector<char> RSAPrivateKey::getByteStream() {
+vector<char> byteStream;
+char ch;
+/* Stream for version */
+ch = UNIVERSAL_PRIMITIVE_INTEGER;
+byteStream.push_back(ch);
+ch = 0x01; /* length-1*/
+byteStream.push_back(ch);
+ch = 0x00; /*contents*/
+byteStream.push_back(ch);
+
+/* n, e, d, p, q, e1, e2, coeff */
+vector<char> stream1 = getPrimitiveByteStream(n);
+vector<char> stream2 = getPrimitiveByteStream(e);
+vector<char> stream3 = getPrimitiveByteStream(d);
+vector<char> stream4 = getPrimitiveByteStream(p);
+vector<char> stream5 = getPrimitiveByteStream(q);
+vector<char> stream6 = getPrimitiveByteStream(e1);
+vector<char> stream7 = getPrimitiveByteStream(e2);
+vector<char> stream8 = getPrimitiveByteStream(coeff);
+
+for(int i=0;i<stream1.size();i++)
+	byteStream.push_back(stream1[i]);
+
+for(int i=0;i<stream2.size();i++)
+	byteStream.push_back(stream2[i]);
+
+for(int i=0;i<stream3.size();i++)
+	byteStream.push_back(stream3[i]);
+
+for(int i=0;i<stream4.size();i++)
+	byteStream.push_back(stream4[i]);
+
+for(int i=0;i<stream5.size();i++)
+	byteStream.push_back(stream5[i]);
+
+for(int i=0;i<stream6.size();i++)
+	byteStream.push_back(stream6[i]);
+
+for(int i=0;i<stream7.size();i++)
+	byteStream.push_back(stream7[i]);
+
+for(int i=0;i<stream8.size();i++)
+	byteStream.push_back(stream8[i]);
+
+//cout<<"Making sequence of length "<<dec<<byteStream.size()<<" bytes"<<endl;
+
+unsigned int bLen = byteStream.size();
+ch = 0x30; /* Universal non primitive ( SEQUENCE ) */ 
+
+vector<char> finalStream;
+finalStream.push_back(ch);
+
+if(bLen<=127) {
+                ch = getByte(bLen);
+                finalStream.push_back(ch);
+        }
+else if(bLen<=65535)
+         {      /* Long Form - look at 2 more bytes*/
+                ch = 0x82;
+                finalStream.push_back(ch);
+                ch = getByte(bLen>>8);
+                finalStream.push_back(ch);
+                ch = getByte(bLen);
+                finalStream.push_back(ch);
+         }
+else {
+                /* Long form - look at 3 more bytes(anything more is insane)*/
+                ch = 0x83;
+                finalStream.push_back(ch);
+                ch = getByte(bLen>>16);
+                finalStream.push_back(ch);
+                ch = getByte(bLen>>8);
+                finalStream.push_back(ch);
+                ch = getByte(bLen);
+                finalStream.push_back(ch);
+        }
+
+for(int i=0;i<byteStream.size();i++)
+	finalStream.push_back(byteStream[i]);
+
+//cout<<"Returning byte stream of "<<finalStream.size()<<" bytes"<<endl;
+return finalStream;
+}
+
+RSAPublicKey RSAPrivateKey::getPublicKey() {
+RSAPublicKey pubKey = RSAPublicKey(n, e, false);
+return pubKey;
+}
+
+mpz_class RSAPrivateKey::getPrivateKey() {
+	return d.getData();
+}
+
+mpz_class RSAPrivateKey::getModulus()
+{
+	return n.getData();
 }

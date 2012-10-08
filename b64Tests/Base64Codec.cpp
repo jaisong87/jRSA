@@ -35,7 +35,9 @@ while(i < str.length())
 		for(int j=0;j<8;j++)
 			{
 			if(i>=str.length())
-				cerr<<"Error : Mismatched bustream size of "<<str.size()<<" B64Codec::stringToByteStream request"<<endl;	
+				{
+				;//cerr<<"Error : Mismatched bytestream size of "<<str.size()<<" B64Codec::stringToByteStream request"<<endl;	
+				}
 			else {
 				ch<<=1;
 				ch|=(str[i]=='1');
@@ -83,3 +85,67 @@ vector<char> B64Codec::decodeB64Stream(string inp)
 		vector<char> byteStream = stringToByteStream(bstr);
 		return byteStream;
 	}
+
+string B64Codec::encodeB64Stream(vector<char> seq)
+{
+	string bstr = "";
+	int z = seq.size();
+	for(int i=0;i<z;i++)
+		{
+			int mask = 0x80;
+			for(int j=0;j<8;j++, mask>>=1)
+				{
+				if((mask&seq[i]) != 0)
+					bstr += "1";	
+				else
+					bstr += "0";
+				}
+		}
+	while(bstr.length()%6 != 0)
+		bstr += "0";
+	
+	int pad = 0;
+	if(z%3==1)
+		pad = 2;
+	else if(z%3 == 1) 
+		pad = 1;	
+
+	return getEncodingFromBitString(bstr, pad);
+}
+
+string B64Codec::getEncodingFromBitString(string str, int plen)
+	{
+	string base64 = "";
+	unsigned int num =0;
+	int pos = 0;
+	int len = str.length();
+		
+	while(pos<len)
+	{
+		num = 0;
+		for(int i=0;i<6;i++)
+			{	
+				num<<=1;
+				if(str[pos] == '1') num|=1;
+				pos++;
+			}
+		
+			if(num<26)
+				base64 += char('A' + num);
+			else if(num<52)
+				base64 += char('a' + num - 26);
+			else if(num < 62 )
+				base64 += char('0' + num - 52 );
+			else if(num == 62)
+				base64 += '+';
+			else if(num == 63)
+				base64 += '/';
+	}
+
+	//cout<<" Made "<<base64.length()<<" chars "<<endl;
+	if(plen == 2)
+			base64 += "==";
+	else if(plen == 1)
+			base64 += "=";
+return base64;
+}

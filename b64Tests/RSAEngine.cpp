@@ -60,7 +60,11 @@ return decodedMessage;
 }
 
 mpz_class RSAEngine::bigmodBPM(mpz_class b, mpz_class p, mpz_class m) {
-	if( p == 1)
+	if( b == 0)
+		return 0;
+	else if(p == 0)
+		return 1;
+	else if( p == 1)
 		return b%m;
 	else if( p %2 == 0)
 		{

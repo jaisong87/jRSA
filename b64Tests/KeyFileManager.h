@@ -9,6 +9,6 @@ class KeyFileManager {
 public:
 KeyFileManager();
 RSAPrivateKey getKey(string keyFile);
-int writePrivateKeyFile(string keyFile, RSAPrivateKey);
+RSAPublicKey getPublicKey(string keyFile); 
 };
 #endif
