@@ -1,1 +1,8 @@
 *.swp
+*.pem
+*.ssl
+*.txt
+*.gch
+*.swo
+*.enc
+*.dec
