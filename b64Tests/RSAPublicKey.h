@@ -3,6 +3,7 @@
 
 #include "berUtils.h"
 #include "Base64Codec.h"
+#include "DERCodec.h"
 #include<vector>
 #include<fstream>
 using namespace std;
@@ -13,10 +14,10 @@ berMpzClass n;
 berMpzClass e;
 bool dbg;
 
-unsigned int getFieldLength(vector<char>, int&);
-int getTag(vector<char>, int&);
-berMpzClass extractBigInteger(vector<char> , int&, int );
-vector<char> getPrimitiveByteStream(berMpzClass dat);
+//unsigned int getFieldLength(vector<char>, int&);
+//int getTag(vector<char>, int&);
+//berMpzClass extractBigInteger(vector<char> , int&, int );
+//vector<char> getPrimitiveByteStream(berMpzClass dat);
 
 public:
 RSAPublicKey(vector<char>, bool);

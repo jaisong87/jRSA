@@ -1,34 +1,7 @@
 #include "RSAPrivateKey.h"
 #include<iostream>
 using namespace std;
-#define UNIVERSAL_PRIMITIVE_INTEGER 0x02
-/* Temporary function. remove it once done */
-string RSAPrivateKey::getBitStr(char N)
-{
-string bstr = "";
-int mask = (1<<7);
-        for(int i=0;i<8;i++,mask>>=1)
-                {
-                        if(N&mask)
-                                bstr+="1";
-                        else bstr+="0";
-                }
-return bstr;
-}
-
-char RSAPrivateKey::getByte(unsigned int N)
-{
-        char ch = 0x00; 
-                        int mask = 0x80;
-                        for(int i=0;i<8;i++)
-                                {
-                                        ch<<=1;
-                                        if((N&mask)!=0)
-                                                ch|=0x01;
-                                        mask>>=1;
-                                }
-return ch;
-}
+/* Impl for RSAPrivateKey */
 
 /* Constructor with all args */
 RSAPrivateKey::RSAPrivateKey(int _version, berMpzClass _n, berMpzClass _e, berMpzClass _d, berMpzClass _p, berMpzClass _q, berMpzClass _e1, berMpzClass _e2, berMpzClass _coeff, bool _dbg) {
@@ -44,234 +17,63 @@ RSAPrivateKey::RSAPrivateKey(int _version, berMpzClass _n, berMpzClass _e, berMp
 	dbg = _dbg;
 }
 
-/* Get the Tag */
-int RSAPrivateKey::getTag(vector<char> byteStream, int &pos){
-
-	char curByte = byteStream[pos];
-	if(dbg) cout<<getBitStr(curByte)<<" : "<<int(curByte)<<endl;
-	
-if((curByte&(1<<7)) || (curByte&(1<<6)));
-else
-        if(dbg) cout<<" Universal "<<endl;
-
-	int tag = curByte&(0x1F);
-	pos++;
-	if(dbg) cout<<"Tag number is "<<tag<<" and pos is "<<pos<<endl;
-	return tag;
-}
-
-unsigned int RSAPrivateKey::getFieldLength(vector<char> byteStream, int &pos){
-	char curByte = byteStream[pos];
-	if(dbg) cout<<"Length Octect#1 is "<<getBitStr(curByte)<<endl;;
-	unsigned int lengthOfSeq = 0; 
-
-	if((curByte & 0x80) == 0 )
-	{
-		if(dbg) cout<<" Data is in Short form"<<endl;
-		lengthOfSeq = ( curByte & 0x7F );
-	}
-	else
-	{
-		if(dbg) cout<<" Data in Long Form "<<endl;
-		int fieldSizeLookup = ( curByte & 0x7F );
-		
-		if(dbg) cout<<" Field Length : ";
-		for(int i=0;i<fieldSizeLookup;i++)
-		{
-			pos++;
-			curByte = byteStream[pos];
-			int mask = 0x80;
-			for(int i=0;i<8;i++)
-				{
-					lengthOfSeq<<=1;
-					if((curByte&mask)!=0)
-						lengthOfSeq|=0x01;
-					mask>>=1;
-				}			
-
-			/*lengthOfSeq<<=8;
-			lengthOfSeq|=curByte;*/
-			if(dbg) cout<<getBitStr(curByte)<<"("<<lengthOfSeq<<")";
-		}
-		if(dbg) cout<<endl;	
-	}
-	pos++;
-	if(dbg) cout<<"returning length of dataType as "<<lengthOfSeq<<" and pos is "<<pos<<endl;
-	return lengthOfSeq;
-}
-
-berMpzClass RSAPrivateKey::extractBigInteger(vector<char> byteStream, int& pos, int lenOfType) {
-	string bitStr = "";
-	for(int i=0;i<lenOfType;i++)
-		{
-			bitStr+= getBitStr(byteStream[pos]);
-			pos++;	
-		}
-	berMpzClass bigNum = berMpzClass(bitStr, 2, lenOfType);
-	return bigNum;
-}
-
-/* Impl for RSAPrivateKey */
 
 /* Construct the RSAPrivateKey info from a byte stream 
  * which is obtained by decoding base64
  */
 RSAPrivateKey::RSAPrivateKey(vector<char> byteStream, bool debugFlag)
 {
-	dbg = debugFlag;
-	if(dbg) 
-		cout<<"Starting to construct RSAPrivateKey"<<endl;
-
 /* start parsing data from byte stream */
 int pos = 0;
-int tag = getTag(byteStream, pos);
-unsigned int lengthOfSeq = getFieldLength(byteStream, pos);
+int len = 0;
+int tag = DERCodec::getTag(byteStream, pos);
+unsigned int lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
 
-if(dbg) { 
-cout<<"LenField for the sequence is "<<lengthOfSeq<<" : "<<getBitStr(lengthOfSeq)<< endl;
-cout<<"We need to look at "<<lengthOfSeq<<" more bytes of "<< (byteStream.size() - pos  )<<" remaining ones "<< endl;
-cout<<"------------------------------"<<endl;
-       }
+/* Manually extract version */
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+version = int(byteStream[pos]); 
+pos++;
 
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
+/*Extract n*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+n = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for Version with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
+/* Extract e*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+e = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-version = int(byteStream[pos]); pos++;
+/* Extract d*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+d = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-if(dbg) { 
-cout<<"Version is "<<version<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
+/*Extract p*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+p = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-/*
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
+/*Extract q*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+q = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for modulus with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
+/*Extract e1*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+e1 = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-modulus = extractBigInteger(byteStream, pos, lengthOfSeq);
-if(dbg) { 
-cout<<"Modulus is "<<modulus.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-*/
+/* Extract e2*/
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+e2 = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-n = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) { 
-cout<<"n is "<<n.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-e = extractBigInteger(byteStream, pos, lengthOfSeq);
-if(dbg) { 
-cout<<"e is "<<e.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-d = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) { 
-cout<<"d is "<<d.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-p = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) { 
-cout<<"p is "<<p.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-q = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) { 
-cout<<"q is "<<q.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-e1 = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) { 
-cout<<"e1 is "<<q.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) { 
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-	}
-
-e2 = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) { 
-cout<<"e2 is "<<q.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-	}
-
-tag =  getTag(byteStream, pos);
-lengthOfSeq = getFieldLength(byteStream, pos);
-
-if(dbg) {
-cout<<"We need to look at "<<lengthOfSeq<<"("<<getBitStr(lengthOfSeq)<<") more bytes for n with Tag:"<< tag <<" and "<<(byteStream.size() - pos  )<<" remaining ones "<< endl;
-        }
-
-coeff = extractBigInteger(byteStream, pos, lengthOfSeq);
-
-if(dbg) {
-cout<<"e2 is "<<q.getData()<<" and pos is "<<pos<<endl;
-cout<<"------------------------------"<<endl;
-        }
+/* Extract coeff */
+tag =  DERCodec::getTag(byteStream, pos);
+lengthOfSeq = DERCodec::getFieldLength(byteStream, pos, len);
+coeff = DERCodec::extractBigInteger(byteStream, pos, lengthOfSeq);
 
 return;
 }
@@ -293,46 +95,6 @@ cout<<"exponent2:"<<endl;
 cout<<hex<<e2.getRsaHexStr()<<endl;
 cout<<"coefficient:"<<endl;
 cout<<hex<<coeff.getRsaHexStr()<<endl;
-}
-
-vector<char> RSAPrivateKey::getPrimitiveByteStream(berMpzClass dat) {
-vector<char> byteStream;
-char ch;
-ch = UNIVERSAL_PRIMITIVE_INTEGER;
-byteStream.push_back(ch);
-
-int len = dat.getLen();
-if(len<=127) {
-		ch = getByte(len);
-		byteStream.push_back(ch);
-	}
-else if(len<=65535)
-	 {	/* Long Form - look at 2 more bytes*/
-		ch = 0x82;
-		byteStream.push_back(ch);
-		ch = getByte(len>>8);
-		byteStream.push_back(ch);
-		ch = getByte(len);	
-		byteStream.push_back(ch);
-	 }
-else {
-		/* Long form - look at 3 more bytes(anything more is insane)*/
-		ch = 0x83;
-		byteStream.push_back(ch);
-		ch = getByte(len>>16);
-                byteStream.push_back(ch);
-		ch = getByte(len>>8);
-                byteStream.push_back(ch);
-		ch = getByte(len);
-                byteStream.push_back(ch);
-	}
-/* get content byte stream and append here */
-vector<char> bigNumStream = dat.getByteStream();
-for(int i=0;i<bigNumStream.size();i++)
-	byteStream.push_back(bigNumStream[i]);
-
-//cout<<"Returning stream of length "<<byteStream.size()<<endl;
-return byteStream;
 }
 
 int RSAPrivateKey::writeKeyFile(string outFile) {
@@ -359,7 +121,7 @@ vector<char> RSAPrivateKey::getByteStream() {
 vector<char> byteStream;
 char ch;
 /* Stream for version */
-ch = UNIVERSAL_PRIMITIVE_INTEGER;
+ch = 0x02;//UNIVERSAL_PRIMITIVE_INTEGER;
 byteStream.push_back(ch);
 ch = 0x01; /* length-1*/
 byteStream.push_back(ch);
@@ -367,14 +129,14 @@ ch = 0x00; /*contents*/
 byteStream.push_back(ch);
 
 /* n, e, d, p, q, e1, e2, coeff */
-vector<char> stream1 = getPrimitiveByteStream(n);
-vector<char> stream2 = getPrimitiveByteStream(e);
-vector<char> stream3 = getPrimitiveByteStream(d);
-vector<char> stream4 = getPrimitiveByteStream(p);
-vector<char> stream5 = getPrimitiveByteStream(q);
-vector<char> stream6 = getPrimitiveByteStream(e1);
-vector<char> stream7 = getPrimitiveByteStream(e2);
-vector<char> stream8 = getPrimitiveByteStream(coeff);
+vector<char> stream1 = DERCodec::getPrimitiveByteStream(n);
+vector<char> stream2 = DERCodec::getPrimitiveByteStream(e);
+vector<char> stream3 = DERCodec::getPrimitiveByteStream(d);
+vector<char> stream4 = DERCodec::getPrimitiveByteStream(p);
+vector<char> stream5 = DERCodec::getPrimitiveByteStream(q);
+vector<char> stream6 = DERCodec::getPrimitiveByteStream(e1);
+vector<char> stream7 = DERCodec::getPrimitiveByteStream(e2);
+vector<char> stream8 = DERCodec::getPrimitiveByteStream(coeff);
 
 for(int i=0;i<stream1.size();i++)
 	byteStream.push_back(stream1[i]);
@@ -400,44 +162,10 @@ for(int i=0;i<stream7.size();i++)
 for(int i=0;i<stream8.size();i++)
 	byteStream.push_back(stream8[i]);
 
-//cout<<"Making sequence of length "<<dec<<byteStream.size()<<" bytes"<<endl;
+/* Wrap this as a DER Sequence */
+vector<char> byteStreamSeq = DERCodec::wrapSequence(byteStream);
 
-unsigned int bLen = byteStream.size();
-ch = 0x30; /* Universal non primitive ( SEQUENCE ) */ 
-
-vector<char> finalStream;
-finalStream.push_back(ch);
-
-if(bLen<=127) {
-                ch = getByte(bLen);
-                finalStream.push_back(ch);
-        }
-else if(bLen<=65535)
-         {      /* Long Form - look at 2 more bytes*/
-                ch = 0x82;
-                finalStream.push_back(ch);
-                ch = getByte(bLen>>8);
-                finalStream.push_back(ch);
-                ch = getByte(bLen);
-                finalStream.push_back(ch);
-         }
-else {
-                /* Long form - look at 3 more bytes(anything more is insane)*/
-                ch = 0x83;
-                finalStream.push_back(ch);
-                ch = getByte(bLen>>16);
-                finalStream.push_back(ch);
-                ch = getByte(bLen>>8);
-                finalStream.push_back(ch);
-                ch = getByte(bLen);
-                finalStream.push_back(ch);
-        }
-
-for(int i=0;i<byteStream.size();i++)
-	finalStream.push_back(byteStream[i]);
-
-//cout<<"Returning byte stream of "<<finalStream.size()<<" bytes"<<endl;
-return finalStream;
+return byteStreamSeq;
 }
 
 RSAPublicKey RSAPrivateKey::getPublicKey() {

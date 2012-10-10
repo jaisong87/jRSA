@@ -9,19 +9,19 @@ using namespace std;
 
 //rsautl -encrypt -in hello.txt -out hello.enc -inkey private.pem
 void encDecData(string keyFile, string inFile, string outFile , bool doEncrypt) {
-	if(doEncrypt == false) 	{ /* Decrypt with private Key */
-		cout<<"Reading Key from "<<keyFile<<" and encrypting "<<inFile<<" to "<<outFile<<endl;
-		RSAEngine eng = RSAEngine(false);
-		KeyFileManager kfm = KeyFileManager();
-		RSAPrivateKey privateKey = kfm.getKey(keyFile);
-		eng.decryptFile(inFile, outFile, privateKey.getPrivateKey() , privateKey.getModulus());
-	}
-	else { /* Encdypt with public Key */
-		cout<<"Reading Key from "<<keyFile<<" and encrypting "<<inFile<<" to "<<outFile<<endl;
+	if(doEncrypt == true) 	{ /* Encrypt with private Key */
+	//	cout<<"Reading Key from "<<keyFile<<" and encrypting "<<inFile<<" to "<<outFile<<endl;
 		RSAEngine eng = RSAEngine(false);
 		KeyFileManager kfm = KeyFileManager();
 		RSAPublicKey publicKey = kfm.getPublicKey(keyFile);
-		eng.encryptFile(inFile, outFile, publicKey.getPublicKey() , publicKey.getModulus());	
+		eng.encryptFile(inFile, outFile, publicKey.getPublicKey() , publicKey.getModulus());
+	}
+	else { /* Decrypt with public Key */
+	//	cout<<"Reading Key from "<<keyFile<<" and encrypting "<<inFile<<" to "<<outFile<<endl;
+		RSAEngine eng = RSAEngine(false);
+		KeyFileManager kfm = KeyFileManager();
+		RSAPrivateKey privateKey = kfm.getKey(keyFile);
+		eng.decryptFile(inFile, outFile, privateKey.getPrivateKey() , privateKey.getModulus());	
 	}
 return;	
 }
@@ -107,7 +107,7 @@ string util = string(argv[1]);
 	int pos = 2;
 	if(util =="genrsa")
 		{
-			cout<<"doing Genrsa"<<endl;		
+			//cout<<"doing Genrsa"<<endl;		
 			string outFile = "key.pem";
 			while(pos<argc)
 				{
@@ -122,7 +122,7 @@ string util = string(argv[1]);
 	else if(util == "rsa")
 		{
 			//openssl rsa -in key1.pem -text
-			cout<<"Doing rsa "<<endl;
+			//cout<<"Doing rsa "<<endl;
 			bool displayKey = false;
 			bool isPublic = false;
 			bool createPub = false;
@@ -164,7 +164,7 @@ string util = string(argv[1]);
 		}
 	else if(util == "rsautl")
 		{
-			cout<<"Doing rsautl "<<endl;
+			//cout<<"Doing rsautl "<<endl;
                         string keyFile = "";
                         string outFile = "";
 			string inFile = "";

@@ -4,6 +4,7 @@
 #include "berUtils.h"
 #include "Base64Codec.h"
 #include "RSAPublicKey.h"
+#include "DERCodec.h"
 #include<vector>
 #include<fstream>
 using namespace std;
@@ -21,10 +22,10 @@ berMpzClass e2; /* d mod ( q-1 ) */
 berMpzClass coeff;
 bool dbg;
 
-unsigned int getFieldLength(vector<char>, int&);
-int getTag(vector<char>, int&);
-berMpzClass extractBigInteger(vector<char> , int&, int );
-vector<char> getPrimitiveByteStream(berMpzClass dat);
+//unsigned int getFieldLength(vector<char>, int&, int&);
+//int getTag(vector<char>, int&);
+//berMpzClass extractBigInteger(vector<char> , int&, int );
+//vector<char> getPrimitiveByteStream(berMpzClass dat);
 
 public:
 RSAPrivateKey(vector<char>, bool);
@@ -33,8 +34,8 @@ void printKeyDetails();
 vector<char> getByteStream();
 int writeKeyFile(string);
 RSAPublicKey getPublicKey();
-string getBitStr(char);
-char getByte(unsigned int);
+//string getBitStr(char);
+//char getByte(unsigned int);
 mpz_class getPrivateKey();
 mpz_class getModulus();
 };
