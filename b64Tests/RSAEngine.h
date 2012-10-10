@@ -4,6 +4,7 @@
 #include<string>
 #include<vector>
 #include<gmpxx.h>
+#include "berUtils.h"
 using namespace std;
 
 

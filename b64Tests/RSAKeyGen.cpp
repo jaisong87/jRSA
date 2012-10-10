@@ -1,24 +1,166 @@
 #include "RSAKeyGen.h"
+#include "berUtils.h"
+#include<iostream>
+#include<ctime>
+#include<cstdio>
+#include<cstdlib>
+#include<string>
+#include<cassert>
+using namespace std;
 
-	RSAKeyGen::RSAKeyGen() {
-		version = 0;
-		n = mpz_class("00b56499f7bcf156fd19aa5e39d656a3ce53d8fc179b2f14798961d4a5c67ae3f79e43f05e62e9e94f786830d51591a773c44c1102bd957936b8d3563a076a64aa23d40dea4e2fbb1279fc64f8d96f71834813237d73c3be4586b0649c8ed2c618319f5f1f3aa04a2df211f0fe4cb6dfcb1cb568058ab61c5719ee72af0a10685bce11ffc0ea15255530d1d0764f9cbe0ed88e3c43adeae1ec9d625c412d9276f9ec2b2b64e574878806528c82be048e22089e93366835d747bbea71a65978bf720af7f7618819fc0d5cf88fc879b8920bd11d27501d86809e5f2eb6ae65b45222596f6314cb4babe492194b687b524d550dd6af4d18af986a879c4c1f5083047f", 16);
-	
-		e = mpz_class("65537", 10);		
-		d = mpz_class("73d7e1b4a38805a3f24629930a5d9e93605d0cf20e7b4cba2990befb77fc77a665fec17da5f1f8bc760b24549147ca0756efb55568ba13056d981a5348f51b80c50ce22e26ecb8ae1e15a06e847e75a1ffdfa924af4fed2dfdcc9d1496e9e8f4fe8be775cc3d1de2a5dbeb6a9c9795e8e356bf2dfade3ecf29926ccf78bfedc4cf8ca49849620c9584924a9cef12b630dad2d98cd5b2055494be37824857688a90305a1726168a661a9996cc424253af7c68be4e9bf76481e230edaf46b2a5ec8e33a130bf6a91e93b3a9edce063cdafa666fba7826c7748e01d6132db49adaceb397570153017a129de568b03b59f516f654fbd77a6cb31003a9f6957b3c0e1", 16);
+mpz_class RSAKeyGen::bigmodBPM(mpz_class b, mpz_class p, mpz_class m) {
+	if(m == 0) /* shouldn't happen - ideally an exception is to be thrown */
+		return 0;
+        else if( b == 0)
+                return 0;
+        else if(p == 0)
+                return 1;
+        else if( p == 1)
+                return b%m;
+        else if( p %2 == 0)
+                {
+                        mpz_class tmpVal = bigmodBPM( b, p/2, m);
+                        return (tmpVal*tmpVal)%m;
+                }
+        else {
+                        mpz_class tmpVal = bigmodBPM( b, p-1, m);
+                        return (tmpVal*b)%m;
+                }
+}
 
-	p = mpz_class("00e8e9f63b1deeddcbf1124df45f13faf763c831133c724e47e2ef3aab85f74a15324be1ab82c4a15b7ecde55887a56f59b9a07c4f7466a758f0e8a7b9767343c87afe2c7bc82d2ce75c5803ead64c3be386f27bc4c0e961a04e2b8d8a1d440a0cf04dc83d8b9f12affd9268e95f129b51aa419a32b631a24c1894d10f65270c59", 16);
+mpz_class RSAKeyGen::genPrime(int bits) {
+        for(int i=0;i<65537;i++)        
+                {     
+                mpz_class tmp = genRan(bits);
+                if(rabinMillerTest(tmp))
+                        {
+			cout<<"+";
+                        //cout<<"found a prme in "<<i<<" tries "<<endl;
+                        return tmp;
+                        }
+		else cout<<".";
+        }
+return 0;
+} 
 
-	q = mpz_class("00c75f5458a223ac8bf20872abab13d1b030f1847b3a6ad21096137df714493899c1fd44f4d315f7e22588a1e4b5d2d842a67503a9e2319c6e837381ebaf855cf01bfe58d28a4999c0ab6695f92acd38b10153d89551a733ed58fd60f27dde7b97d87c680719b3b04808a2232a041bf4dc30a9fe715a54be46c81cbb4c42091c97", 16);
+mpz_class RSAKeyGen::genRan(int bits)
+{   
+  string str = "";
+  std::random_device rd1; /* high entropy non-deterministic random number generator engine */
 
-	e1 = mpz_class("00b65f9c02262a0759cd65bbcc81362fe8ce24cee875083beb65f2544a4217a3d67d0f95a0aa4034e8639decdb293b8cb900f47ce1ea0f07324950a324416f77bfdf2e6ebe6dbb91d1872913c82a0c7f48653e31539a8a237b563a1c15ed5c7d522c477b675590351dc0bb879254734952e4b1817ffbd15977a437c28aff7557e1", 16);
-
-	e2 = mpz_class("00aea30440f7158488b923493eb2061440df3e4f2b99ca03e35f72077eac184f29efd0a7dc44221415d586cf3885440106b0c402c78648aa9beb2cfc7ab42e7f701b353a1c81e1627a7028d5e981e26d6c2e9b81359a667987c7d17a602e7cf989d2a9767df1b7820c36f3bf1588afec560b927c3c5241b4c24f7b4b5ccae32c55", 16);
-
-	coeff = mpz_class("008d094c242b0e96c2b520dc1d984112b952cb612b32536e44e60b2ac9d86b5870dd1153168bdd7fc7b4727aa1015ad48190fc59a4f27c5da9e81beff39f7d713d14f2090bdec5ed395189f37eec152d6b7106153de16b4b3460c2a85f78a17125eb52e649e4b862020a89c1ab8e4ca897dc919a5042f4fc235885c7a162185c3f", 16);
-	}
-
+        int bytes = (bits+1)/8;;
+        for(int i=0;i<bytes;i++)
+                {
+                        str += eightBitStr(rd1());
+                }
+        str = str.substr(0, bits);
+        mpz_class randNum = mpz_class(str, 2);
+        return randNum;
+}
 	RSAPrivateKey RSAKeyGen::getRSAPrivateKey() {
 		RSAPrivateKey pkey = RSAPrivateKey(version, n, e, d, p, q, e1, e2, coeff, false);	
 		return pkey;
-	}	
+	}
+
+string RSAKeyGen::eightBitStr(int N)
+{
+        string bstr = "";
+        int mask = 0x80;
+        for(int i=0;i<8;i++, mask>>=1)
+                {
+                if(N&mask)
+                        bstr+="1";
+                else bstr += "0";
+        }
+
+        return bstr;
+}
+
+        bool RSAKeyGen::rabinMillerTest(mpz_class num) {
+		if(num<2)
+			return false; /* cannot use such primes */
+                int lowPrimes[] = { 2, 3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97
+                   ,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179
+                   ,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269
+                   ,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367
+                   ,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461
+                   ,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571
+                   ,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661
+                   ,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773
+                   ,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883
+                   ,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997 };
+
+                vector<int> primeSet(lowPrimes, lowPrimes + sizeof(lowPrimes)/sizeof(int));
+
+                for(int i=0;i<primeSet.size();i++)
+                        {
+                        if(num == primeSet[i])
+                                return true;
+                        else if(num % primeSet[i] == 0)
+                                return false;
+                        }
+               /* check for primality here */
+                mpz_class s = (num - 1);
+                mpz_class t = 0;
+                while(s%2 == 0)
+                        {
+                                s = s/2;
+                                t = t + 1;
+                        }
+
+                berMpzClass bnum = berMpzClass(s);
+                int bits = bnum.getLen()-1;
+
+                for(int k=0;k<128;k+=2)
+                        {
+                                //a = random number between 2 and num -1                                                
+                                mpz_class a = genRan(bits);
+                                mpz_class v = bigmodBPM(a, s, n); /* a pow (n-1) mod n */
+
+                                mpz_class i = 0;
+                                if( v != 1)
+                                        {
+                                                if ( i == (t-1))
+                                                        return false;
+                                                else {
+                                                        i = i + 1;
+                                                        v = bigmodBPM(v, 2, n);
+                                                        }
+                                        }
+                        }
+                return true;
+        }
+
+        RSAKeyGen::RSAKeyGen() {
+                version = 0;
+	
+        p = genPrime(512); /* generate 512-bit prime */
+        q = genPrime(512); /* generate 512-bit prime */
+
+        int tries = 0;
+        while(p==q && tries < 256)
+                q = genPrime(512);
+
+        n = p*q; /* modulus is pq */
+
+        e = mpz_class("65537", 10);
+
+        mpz_class phi = (p-1)*(q-1); /* phi = (p-1)*(q-1) */
+        mpz_class e = mpz_class("65537", 10); /* e is 65537 */
+
+        mpz_t d1;
+        mpz_init(d1);
+        mpz_invert (d1, e.get_mpz_t(), phi.get_mpz_t());
+        d = mpz_class(d1); /* private key as multiplicative inverse of public key with modulus */
+	
+	assert( d != 0 );
+	
+        e1 = d%(p-1); /* exponent1 */
+        e2 = d%(q-1); /* exponent2 */
+
+        mpz_t d2;
+        mpz_init(d2);
+        mpz_invert (d2, q.get_mpz_t(), p.get_mpz_t()); /* inverse of q mod p */
+        coeff = mpz_class(d2);
+        }
+	

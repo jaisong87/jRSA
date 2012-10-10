@@ -55,13 +55,13 @@ if(bLen<=127) {
                 ch = getByte(bLen);
                 finalStream.push_back(ch);
         }
-else if(bLen<=255){
+/*else if(bLen<=255){
 		cout<<"encoding Long form 1Byte"<<bLen<<endl;
                 ch = 0x81;
                 finalStream.push_back(ch);
                 ch = getByte(bLen);
                 finalStream.push_back(ch);
-}
+}*/
 else if(bLen<=65535)
          {      /* Long Form - look at 2 more bytes*/
 		cout<<"encoding Long form 2Byte"<<bLen<<endl;
@@ -179,12 +179,12 @@ if(len<=127) {
                 ch = DERCodec::getByte(len);
                 byteStream.push_back(ch);
         }
-else if(len<=255){
+/*else if(len<=255){
 		ch = 0x81;
                 byteStream.push_back(ch);
                 ch = getByte(len);
                 byteStream.push_back(ch);
-}
+}*/
 else if(len<=65535)
          {      /* Long Form - look at 2 more bytes*/
                 ch = 0x82;

@@ -59,6 +59,16 @@ void createPublicKeyFile(string keyFile, bool isPublic, string outFile)
 return;
 }
 
+/* This serves as a unit test */
+void createPrivateKeyFile(string keyFile, string outFile)
+{
+        KeyFileManager kfm = KeyFileManager();
+        RSAPrivateKey priKey = kfm.getKey(keyFile);
+        priKey.writeKeyFile(outFile);
+return;
+}
+
+
 void testBerMpzClass() {
 string num;
 while(cin>>num)
@@ -126,6 +136,8 @@ string util = string(argv[1]);
 			bool displayKey = false;
 			bool isPublic = false;
 			bool createPub = false;
+			bool createPri = false;
+			bool pubOut = false;
 			string keyFile = "";
 			string outFile = "";
 			while(pos<argc)
@@ -141,21 +153,33 @@ string util = string(argv[1]);
 						isPublic = true;
 					else if(nextArg == "-out")
 						{
-						createPub = true;
+						createPri = true;
 						outFile = string(argv[pos]); pos++;		
 						}
+					else if(nextArg == "-pubout")
+						{
+						pubOut = true;			
+						}
 				}
+			if( (isPublic && createPri ) || pubOut )
+				{		
+				createPri = false;
+				createPub = true;
+				}
+
 			if(keyFile=="")
 				{
 					cout<<"ERROR!! - Please specify a key File"<<endl;
 				}	
 			else {
-				if(createPub == true)
+				if(createPub == true || createPri == true )
 					{
 					if(outFile == "")
 						cout<<"ERROR!! - Please specify an output File (-out)"<<endl;
-					else 
+					else if(createPub)
 						createPublicKeyFile(keyFile, isPublic, outFile);
+					else if(createPri)	
+						createPrivateKeyFile(keyFile,  outFile);
 					}
 				else {
 					displayKeyDetails(keyFile, isPublic);

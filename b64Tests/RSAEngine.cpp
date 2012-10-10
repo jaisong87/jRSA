@@ -83,7 +83,9 @@ mpz_class RSAEngine::bigmodBPM(mpz_class b, mpz_class p, mpz_class m) {
 vector<char> RSAEngine::encryptMessage(mpz_class privateKey, mpz_class modulus, vector<char> message) {
 
 	//cout<<" *********** start of encryption ************* "<<endl;
-	vector<char> encodedMessage = encodeMessage(message, 128);
+	berMpzClass mod = berMpzClass(modulus);
+	int mLen = mod.getLen();
+	vector<char> encodedMessage = encodeMessage(message, mLen);
 	printBytestream(encodedMessage);
 
 	mpz_class msgNum = getBigInt(encodedMessage);
@@ -92,7 +94,7 @@ vector<char> RSAEngine::encryptMessage(mpz_class privateKey, mpz_class modulus, 
 	mpz_class encryptedNum = /*msgNum*/bigmodBPM(msgNum, privateKey, modulus);
 	//cout<<" Encrypted msgNum is : "<<endl<<hex<<encryptedNum<<endl;
 	
-	vector<char> encryptedMsg = getByteStream(encryptedNum, 128);
+	vector<char> encryptedMsg = getByteStream(encryptedNum, mLen);
 	//cout<<"Encryption returned stream with "<<encryptedMsg.size()<<" bytes"<<endl;
 
 	printBytestream(encryptedMsg);
@@ -104,6 +106,8 @@ vector<char> RSAEngine::encryptMessage(mpz_class privateKey, mpz_class modulus, 
 vector<char> RSAEngine::decryptMessage(mpz_class publicKey, mpz_class modulus, vector<char> message){
 	//cout<<" *********** start of decryption ************* "<<endl;
 	printBytestream(message);
+	berMpzClass mod = berMpzClass(modulus);
+	int mLen = mod.getLen();
 
 	mpz_class encryptedNum = getBigInt(message);
 	//cout<<" Message to decrypt is : "<<endl<<hex<<encryptedNum<<endl;
@@ -111,11 +115,11 @@ vector<char> RSAEngine::decryptMessage(mpz_class publicKey, mpz_class modulus, v
 	mpz_class decryptedNum =  /*encryptedNum;*/bigmodBPM(encryptedNum, publicKey, modulus);
 	//cout<<" Decrypted num is "<<endl<<hex<<decryptedNum<<endl;
 	
-	vector<char> decryptedMsg = getByteStream(decryptedNum, 128);
+	vector<char> decryptedMsg = getByteStream(decryptedNum, mLen);
 	mpz_class decodedNum = getBigInt(decryptedMsg);
 		
 
-        vector<char> msg = decodeMessage(decryptedMsg, 128);
+        vector<char> msg = decodeMessage(decryptedMsg, mLen);
 	//cout<<"Encryption returned stream with "<<msg.size()<<" bytes"<<endl;
 	//cout<<" *********** end of decryption ************* "<<endl;
 	return msg;

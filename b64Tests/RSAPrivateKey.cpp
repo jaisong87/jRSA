@@ -23,6 +23,14 @@ RSAPrivateKey::RSAPrivateKey(int _version, berMpzClass _n, berMpzClass _e, berMp
  */
 RSAPrivateKey::RSAPrivateKey(vector<char> byteStream, bool debugFlag)
 {
+/* hex dump for debug purposes */
+/*
+int pos1 = 0;
+int len1 = byteStream.size();
+string hexdump = DERCodec::extractBigInteger(byteStream, pos1, len1).getRsaHexStr();
+cout<<hexdump<<endl;
+*/
+
 /* start parsing data from byte stream */
 int pos = 0;
 int len = 0;
@@ -162,6 +170,7 @@ for(int i=0;i<stream7.size();i++)
 for(int i=0;i<stream8.size();i++)
 	byteStream.push_back(stream8[i]);
 
+//byteStream.push_back(char(0x00)); /* last field is NULL type*/
 /* Wrap this as a DER Sequence */
 vector<char> byteStreamSeq = DERCodec::wrapSequence(byteStream);
 
