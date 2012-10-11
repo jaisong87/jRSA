@@ -27,6 +27,26 @@ void encDecData(string keyFile, string inFile, string outFile , bool doEncrypt) 
 return;	
 }
 
+void hexDump(string inFile)
+{
+	vector<char> keyStream;
+
+        ifstream f1(inFile.c_str());
+        while(f1.good())
+        {
+                char ch;
+                f1.get(ch);
+                if(f1.good())
+                        keyStream.push_back(ch);
+        }
+        f1.close();
+	
+	int pos = 0;
+	int len = keyStream.size();
+	cout<<DERCodec::extractBigInteger(keyStream, pos, len).getRsaHexStr()<<endl;
+	return;
+}
+
 void parseX509(string certFile, string pubFile){
 	cout<<"Parsing X509 Certificate"<<endl;
 	KeyFileManager kfm = KeyFileManager();
@@ -308,6 +328,15 @@ string util = string(argv[1]);
                                                 }
 					}
 			parseX509(certFile, pubFile);
+		}
+	else if(util == "hexdump")
+		{
+			string inFile = "";
+			 while(pos<argc) {
+                                         string nextArg = string(argv[pos]); pos++;
+					 inFile = nextArg;
+					}
+			hexDump(inFile);
 		}
 	else {
 		cerr<<"Unknown utility"<<endl;

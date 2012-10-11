@@ -1,0 +1,27 @@
+HOW TO USE (COMMAND LINE OPTIONS)
+--------------------------------
+Do a make and you get a utility called jrsa
+
+The following commands from openssl are implemented
+	1.genrsa
+	2.rsa
+	3.rsautl
+	4.dgst
+	5.x509
+
+all the commands are inline with openssl(follow similar format)
+
+To generate a publicKey File from an x509 certificate(cert1.pem), use -pubout option
+"./jrsa x509 -in cert1.pem -text -pubout pub.pem"
+
+
+BROKEN FUNCTIONALITY
+---------------------------------------
+Creation of X509 certificate is not complete. But signature creation and verification is working.
+Parsing and verification of X509 certificate, signed data is also working.
+
+All other functionalities like genrsa, rsa, rsautl, dgst are working.
+
+HOW TO TEST
+--------------------------------------
+simply run every test script in unitTests/ 

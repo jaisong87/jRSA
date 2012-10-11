@@ -45,8 +45,8 @@ void RSASignature::readSignature(string dgstFile, string keyFile)
 	/*pos1  = 0;
 	len1 = decStream.size();
 	cout<<"Decrypted Stream :"<<endl;
-	cout<<DERCodec::extractBigInteger(decStream, pos1, len1).getRsaHexStr()<<endl;*/
-	
+	cout<<DERCodec::extractBigInteger(decStream, pos1, len1).getRsaHexStr()<<endl;
+	*/
 	int pos = 0;
 	int len = 0;
 	
