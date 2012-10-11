@@ -86,6 +86,14 @@ vector<char> berMpzClass::getByteStream()
         return byteStream;
 }
 
+string berMpzClass::getASCIIStr(){
+	vector<char> bstr = getByteStream();
+	string str = "";
+	for(int i=0;i<bstr.size();i++)
+		str += bstr[i];
+	return str;
+}
+
 int  berMpzClass::getHexVal(char ch){
         int i = 0;
         if(ch >= '0' && ch<='9')

@@ -4,6 +4,7 @@
 #include "Base64Codec.h"
 #include "KeyFileManager.h"
 #include "RSAKeyGen.h"
+#include "RSASignature.h"
 #include<iostream>
 using namespace std;
 
@@ -24,6 +25,42 @@ void encDecData(string keyFile, string inFile, string outFile , bool doEncrypt) 
 		eng.decryptFile(inFile, outFile, privateKey.getPrivateKey() , privateKey.getModulus());	
 	}
 return;	
+}
+
+void parseX509(string certFile, string pubFile){
+	cout<<"Parsing X509 Certificate"<<endl;
+	KeyFileManager kfm = KeyFileManager();
+	X509 cert = kfm.getCert(certFile);
+
+	if(cert.isValid())
+		{
+	cout<<"Writing Key to "<<pubFile<<endl;	
+	RSAPublicKey pubKey = cert.getPublicKey();
+	pubKey.writeKeyFile(pubFile);
+		}
+	else {
+		cout<<"Certificate is invalid( expired certificate )"<<endl;
+		}
+}
+
+void rsaDgst( string plainFile, string dgstFile, string keyFile, bool doSign, bool doVerify) {
+	if(plainFile == "")
+		cerr<<"ERROR! - Please specify an input file"<<endl;
+	else if(dgstFile == "")
+		cerr<<"ERROR! - Please specify a digest file"<<endl;
+	else if(keyFile == "")
+		cerr<<"ERROR! - Please specify a key file"<<endl;
+	else if((doSign^doVerify) == false)
+		cerr<<"ERROR! - Incorrect sign/verify option"<<endl;
+	else if(doVerify)
+		{
+			//cout<<"Verifying the signature : "<<dgstFile<<" using public key : "<<keyFile<<" against : "<<plainFile<<endl;
+			RSASignature inpSignature = RSASignature(dgstFile, keyFile, plainFile,true);
+		}
+	else {
+			//cout<<"Verifying the signature : "<<dgstFile<<" using public key : "<<keyFile<<" against : "<<plainFile<<endl;
+			RSASignature inpSignature = RSASignature(dgstFile, keyFile, plainFile,false);
+		}
 }
 
 //openssl rsa -in key1.pem -text
@@ -226,6 +263,51 @@ string util = string(argv[1]);
 					encDecData(keyFile, inFile, outFile , doEncrypt);	
 			}
 			else cout<<"Error!! - Invalid Encrypt/decrypt option!!!"<<endl;		
+		}
+	else if(util == "dgst")
+		{
+			string plainFile;
+			string dgstFile;
+			string keyFile;
+			bool doSign = false;
+			bool doVerify = false;
+			 while(pos<argc) {
+                                         string nextArg = string(argv[pos]); pos++;
+                                         if(nextArg == "-sign") {
+						doSign = true;
+                                                keyFile = string(argv[pos]); pos++;
+                                        	}	
+					else if(nextArg == "-verify") { 
+						doVerify = true;
+                                                keyFile = string(argv[pos]); pos++;
+						}
+					else if(nextArg == "-signature" || nextArg == "-out" ) {
+                                                dgstFile = string(argv[pos]); pos++;
+						}
+					else {
+						plainFile = nextArg;
+						}
+					}
+			rsaDgst(plainFile, dgstFile, keyFile, doSign, doVerify);
+		}
+	else if(util == "x509")
+		{
+			string certFile = "";
+			bool dispCert = false;
+			string pubFile = "";
+                         while(pos<argc) {
+                                         string nextArg = string(argv[pos]); pos++;
+                                         if(nextArg == "-text") {
+                                                dispCert = true;
+                                                }
+					 else if(nextArg == "-in") {
+                                                certFile = string(argv[pos]); pos++;
+                                                }
+					 else if(nextArg == "-pubout") {
+                                                pubFile = string(argv[pos]); pos++;
+                                                }
+					}
+			parseX509(certFile, pubFile);
 		}
 	else {
 		cerr<<"Unknown utility"<<endl;

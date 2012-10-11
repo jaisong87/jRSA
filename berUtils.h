@@ -48,6 +48,7 @@ berMpzClass(string num, int base, int l);
 mpz_class getData();
 int getLen();
 string getRsaHexStr();
+string getASCIIStr();
 vector<char> getByteStream();
 int getHexVal(char);
 };

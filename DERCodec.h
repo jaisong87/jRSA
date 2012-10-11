@@ -5,7 +5,7 @@
 #include<string>
 using namespace std;
 
-enum DERType {INTEGER, BITSTRING,SEQUENCE , T61STRING};
+enum DERType {INTEGER, BITSTRING, OCTETSTRING, SEQUENCE , T61STRING};
 
 class DERCodec {
 public:
@@ -17,6 +17,7 @@ static int getTag(vector<char> , int&);
 static unsigned int getFieldLength(vector<char> byteStream, int &pos, int& len);
 static vector<char> getPrimitiveByteStream(berMpzClass dat);
 static berMpzClass extractBigInteger(vector<char> byteStream, int& pos, int lenOfType);
+static vector<char> extractSequence(vector<char> byteStream, int& pos, int lenOfType);
 };
 
 #endif

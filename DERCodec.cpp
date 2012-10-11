@@ -35,6 +35,11 @@ else if(tp == BITSTRING)
 		ch = 0x03;
 		finalStream.push_back(ch);
 	}
+else if(tp == OCTETSTRING)
+	{
+		ch = 0x04;
+		finalStream.push_back(ch);
+	}
 else if(tp == SEQUENCE)
         {
                 ch = 0x30;
@@ -51,7 +56,7 @@ else {
 	
 
 if(bLen<=127) {
-		cout<<"encoding short form "<<bLen<<endl;
+		//cout<<"encoding short form "<<bLen<<endl;
                 ch = getByte(bLen);
                 finalStream.push_back(ch);
         }
@@ -64,7 +69,7 @@ if(bLen<=127) {
 }*/
 else if(bLen<=65535)
          {      /* Long Form - look at 2 more bytes*/
-		cout<<"encoding Long form 2Byte"<<bLen<<endl;
+		//cout<<"encoding Long form 2Byte"<<bLen<<endl;
                 ch = 0x82;
                 finalStream.push_back(ch);
                 ch = getByte(bLen>>8);
@@ -74,7 +79,7 @@ else if(bLen<=65535)
          }
 else {
                 /* Long form - look at 3 more bytes(anything more is insane)*/
-		cout<<"encoding Long form 3Byte"<<bLen<<endl;
+		//cout<<"encoding Long form 3Byte"<<bLen<<endl;
                 ch = 0x83;
                 finalStream.push_back(ch);
                 ch = getByte(bLen>>16);
@@ -222,5 +227,15 @@ berMpzClass DERCodec::extractBigInteger(vector<char> byteStream, int& pos, int l
                 }
         berMpzClass bigNum = berMpzClass(bitStr, 2, lenOfType);
         return bigNum;
+}
+
+vector<char> DERCodec::extractSequence(vector<char> byteStream, int& pos, int lenOfType) {
+        vector<char> subSeq;
+        for(int i=0;i<lenOfType;i++)
+                {
+                        subSeq.push_back(byteStream[pos]);
+                        pos++;
+                }
+        return subSeq;
 }
 

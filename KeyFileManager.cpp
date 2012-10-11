@@ -40,4 +40,21 @@ RSAPublicKey KeyFileManager::getPublicKey(string keyFile) {
 	return myKey;
 }
 
+X509 KeyFileManager::getCert(string keyFile) {
+        ifstream f1(keyFile.c_str());
+        string str, encodedKeyStr;
+
+        while(getline(f1, str))
+                {
+                        if(str.find("-----") == string::npos)
+                                {
+                                        encodedKeyStr += str;
+                                }
+                }
+
+        B64Codec testCodec = B64Codec();
+        vector<char> bytestream = testCodec.decodeB64Stream(encodedKeyStr);
+        X509 myCert = X509(bytestream);
+        return myCert;
+}
 
